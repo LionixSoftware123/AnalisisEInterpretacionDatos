@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Simulador UNIR - Examen final</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #111827;
+      --card2: #0b1220;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent2: #22c55e;
+      --warn: #f59e0b;
+      --danger: #ef4444;
+      --ok: #16a34a;
+      --bad: #dc2626;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: linear-gradient(180deg, var(--bg), #020617);
+      color: var(--text);
+    }
+    .container {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+    .hero, .card {
+      background: rgba(17,24,39,.96);
+      border: 1px solid rgba(148,163,184,.18);
+      border-radius: 18px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.28);
+    }
+    .hero { padding: 24px; margin-bottom: 18px; }
+    .card { padding: 20px; margin-bottom: 16px; }
+    h1,h2,h3 { margin-top: 0; }
+    .sub { color: var(--muted); line-height: 1.55; }
+    .row, .grid {
+      display: grid;
+      gap: 12px;
+    }
+    .row { grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); margin-top: 18px; }
+    .grid { grid-template-columns: repeat(auto-fit, minmax(260px,1fr)); margin-top: 16px; }
+    .pill {
+      background: rgba(56,189,248,.1);
+      border: 1px solid rgba(56,189,248,.25);
+      color: #bae6fd;
+      border-radius: 999px;
+      padding: 10px 14px;
+      text-align: center;
+      font-size: .95rem;
+    }
+    .box {
+      background: var(--card2);
+      border: 1px solid rgba(148,163,184,.16);
+      border-radius: 14px;
+      padding: 14px;
+    }
+    .controls { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+    button {
+      border: 0;
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: .15s ease;
+    }
+    button:hover { transform: translateY(-1px); }
+    button:disabled { opacity: .55; cursor: not-allowed; transform: none; }
+    .primary { background: var(--accent); color: #06202d; }
+    .secondary { background: #334155; color: white; }
+    .success { background: var(--accent2); color: #052e16; }
+    .warning { background: var(--warn); color: #3b2400; }
+    .quiz-wrap, .results { display: none; }
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .progress {
+      width: 100%;
+      height: 12px;
+      background: #020617;
+      border: 1px solid rgba(148,163,184,.15);
+      border-radius: 999px;
+      overflow: hidden;
+      margin-top: 12px;
+    }
+    .progress-bar {
+      height: 100%;
+      width: 0;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      transition: width .25s ease;
+    }
+    .timer-box {
+      margin-top: 14px;
+      padding: 14px;
+      background: var(--card2);
+      border: 1px solid rgba(148,163,184,.16);
+      border-radius: 14px;
+    }
+    .timer-top {
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+      margin-bottom:8px;
+    }
+    .time-text { font-size: 1.15rem; font-weight: 700; }
+    .question { font-size: 1.15rem; line-height: 1.55; margin-bottom: 16px; }
+    .option {
+      display: block;
+      width: 100%;
+      text-align: left;
+      background: #0f172a;
+      color: var(--text);
+      border: 1px solid rgba(148,163,184,.2);
+      margin-bottom: 10px;
+      padding: 14px;
+      border-radius: 14px;
+    }
+    .option.selected { outline: 2px solid rgba(56,189,248,.55); }
+    .option.correct { background: rgba(22,163,74,.15); border-color: rgba(22,163,74,.5); }
+    .option.incorrect { background: rgba(220,38,38,.14); border-color: rgba(220,38,38,.5); }
+    .feedback {
+      display: none;
+      margin-top: 16px;
+      padding: 14px;
+      background: var(--card2);
+      border: 1px solid rgba(148,163,184,.18);
+      border-radius: 14px;
+    }
+    .memoriza { color: #fde68a; margin-top: 8px; }
+    .score { font-size: 2rem; font-weight: 700; margin: 8px 0; }
+    .summary-item { border-top: 1px solid rgba(148,163,184,.15); padding: 14px 0; }
+    .tag {
+      display:inline-block;
+      margin-left:8px;
+      font-size:.82rem;
+      padding:4px 8px;
+      border-radius:999px;
+    }
+    .tag.ok { background: rgba(22,163,74,.18); color: #86efac; }
+    .tag.bad { background: rgba(220,38,38,.18); color: #fca5a5; }
+    .notice {
+      margin-top: 14px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      background: rgba(245,158,11,.12);
+      border: 1px solid rgba(245,158,11,.28);
+      color: #fde68a;
+    }
+    .difficulty-options label { display:block; margin-top:8px; cursor:pointer; }
+    .difficulty-options input { margin-right:8px; }
+    code.inline {
+      background: rgba(148,163,184,.12);
+      padding: 2px 6px;
+      border-radius: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <section class="hero">
+      <h1>Simulador de examen final · limpio y listo para GitHub</h1>
+      <div class="sub">
+        Esta versión usa un <strong>banco realmente único de 200 preguntas</strong>, selecciona <strong>20 sin repetición dentro del mismo simulacro</strong>, mezcla las opciones, permite elegir <strong>dificultad</strong> y cierra el intento al llegar a <strong>20 minutos</strong>.
+      </div>
+
+      <div class="row">
+        <div class="pill">Banco único: 200</div>
+        <div class="pill">Por intento: 20</div>
+        <div class="pill">Sin repetición real</div>
+        <div class="pill">Tiempo máximo: 20 min</div>
+      </div>
+
+      <div class="grid">
+        <div class="box">
+          <strong>Selecciona dificultad</strong>
+          <div class="difficulty-options">
+            <label><input type="radio" name="difficulty" value="facil" checked> Fácil</label>
+            <label><input type="radio" name="difficulty" value="media"> Media</label>
+            <label><input type="radio" name="difficulty" value="dificil"> Difícil</label>
+            <label><input type="radio" name="difficulty" value="mixta"> Mixta</label>
+          </div>
+        </div>
+        <div class="box">
+          <strong>Modo de uso</strong><br>
+          <span class="sub">Guarda este archivo como <code class="inline">index.html</code>, súbelo a tu repositorio y activa GitHub Pages.</span>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button class="primary" id="startBtn">Iniciar simulador</button>
+        <button class="secondary" id="newExamBtn">Generar nuevo examen</button>
+      </div>
+
+      <div class="notice">
+        Base conceptual construida con los temas troncales del material de la asignatura: estadística, muestreo, variables, diseño de estudios, frecuencias, gráficos, Big Data y estadística computacional. fileciteturn1file0
+      </div>
+    </section>
+
+    <section class="quiz-wrap" id="quizWrap">
+      <div class="card">
+        <div class="topbar">
+          <div><strong id="counter">Pregunta 1 de 20</strong></div>
+          <div>Correctas: <strong id="scoreNow">0</strong></div>
+          <div>Banco: <strong id="bankSize">200</strong></div>
+          <div>Dificultad: <strong id="difficultyNow">Fácil</strong></div>
+        </div>
+        <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+
+        <div class="timer-box">
+          <div class="timer-top">
+            <div><strong>Tiempo restante:</strong> <span class="time-text" id="timeText">20:00</span></div>
+            <div><strong>Progreso del tiempo</strong></div>
+          </div>
+          <div class="progress"><div class="progress-bar" id="timeBar" style="width:100%"></div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="question" id="questionText"></div>
+        <div id="optionsBox"></div>
+        <div class="feedback" id="feedbackBox"></div>
+        <div class="controls">
+          <button class="warning" id="checkBtn">Revisar respuesta</button>
+          <button class="primary" id="nextBtn" disabled>Siguiente</button>
+          <button class="secondary" id="restartBtn">Nuevo examen aleatorio</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="results" id="resultsBox">
+      <div class="card">
+        <h2>Resultado final</h2>
+        <div class="score" id="finalScore"></div>
+        <div class="sub" id="finalMsg"></div>
+        <div class="controls">
+          <button class="success" id="retryBtn">Intentar con otro examen</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Resumen para repasar</h3>
+        <div id="summaryList"></div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const QUESTION_COUNT = 20;
+    const EXAM_TIME_SECONDS = 20 * 60;
+
+    function shuffle(array) {
+      const arr = [...array];
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    function makeQuestion(id, q, correct, wrongs, difficulty, explain, memo) {
+      return { id, q, correct, wrongs, difficulty, explain, memo };
+    }
+
+    const BANK = [];
+    let QID = 1;
+
+    const defs = [
+      ['estadística', 'la ciencia que permite aprender de los datos', ['un conjunto de gráficos llamativos', 'el arte de memorizar fórmulas sin contexto', 'un proceso solo de cálculo algebraico'], 'facil', 'La idea central es aprender de los datos para comprender fenómenos y apoyar conclusiones.', 'Estadística = aprender de los datos.'],
+      ['dato estadístico', 'una observación con contexto', ['un número aislado sin significado', 'una conclusión final del estudio', 'una tabla ya resumida'], 'facil', 'Un dato adquiere valor cuando se relaciona con la variable y el fenómeno observado.', 'Dato = valor + contexto.'],
+      ['población', 'el conjunto total de individuos o elementos de interés', ['solo los casos con respuesta válida', 'la muestra ya encuestada', 'el software usado en el análisis'], 'facil', 'La población es el universo sobre el que se quiere concluir.', 'Población = conjunto total.'],
+      ['muestra', 'un subconjunto de la población', ['la totalidad del fenómeno', 'un error de medición', 'una tabla de frecuencias'], 'facil', 'La muestra es una parte de la población usada para estudiar el fenómeno.', 'Muestra = parte de la población.'],
+      ['inferencia estadística', 'el paso de la muestra a conclusiones sobre la población', ['el conteo inicial de frecuencias', 'la limpieza de datos perdidos', 'la selección del color de un gráfico'], 'media', 'La inferencia generaliza información muestral hacia la población.', 'Inferir = generalizar.'],
+      ['sesgo', 'una distorsión sistemática en el estudio o sus conclusiones', ['una frecuencia acumulada', 'la medida más grande', 'un valor exacto sin error'], 'media', 'El sesgo altera la neutralidad del estudio y puede provenir de varias fuentes.', 'Sesgo = distorsión sistemática.'],
+      ['frecuencia absoluta', 'el número de veces que aparece una modalidad', ['el porcentaje sobre el total', 'la suma de porcentajes válidos', 'el punto medio de un intervalo'], 'facil', 'La frecuencia absoluta es un conteo directo.', 'Absoluta = conteo.'],
+      ['frecuencia relativa', 'la proporción de una modalidad respecto al total', ['el total acumulado de casos', 'la mediana de la variable', 'el límite superior del intervalo'], 'facil', 'La relativa expresa qué parte del total representa la categoría.', 'Relativa = parte/total.'],
+      ['frecuencia absoluta acumulada final', 'el tamaño de la muestra', ['la categoría más frecuente', 'el menor valor observado', 'el número de variables del estudio'], 'facil', 'La acumulada final suma todas las observaciones y coincide con N.', 'Acumulada final = N.'],
+      ['marca de clase', 'el punto medio del intervalo', ['la frecuencia relativa del intervalo', 'el límite inferior', 'la moda del conjunto'], 'media', 'La marca de clase representa al intervalo mediante su centro.', 'Marca de clase = centro.']
+    ];
+
+    defs.forEach(([term, correct, wrongs, difficulty, explain, memo]) => {
+      BANK.push(makeQuestion(QID++, `¿Cuál de las siguientes opciones define mejor ${term}?`, correct, wrongs, difficulty, explain, memo));
+      BANK.push(makeQuestion(QID++, `En el contexto del curso, ¿qué descripción corresponde a ${term}?`, correct, wrongs, difficulty, explain, memo));
+    });
+
+    const variables = [
+      ['Color de ojos', 'categórica nominal', ['categórica ordinal', 'cuantitativa discreta', 'cuantitativa continua'], 'facil', 'No tiene orden natural entre categorías.', 'Nominal = sin orden.'],
+      ['Nivel de satisfacción bajo-medio-alto', 'categórica ordinal', ['categórica nominal', 'cuantitativa discreta', 'cuantitativa continua'], 'facil', 'Las categorías tienen orden natural.', 'Ordinal = con orden.'],
+      ['Número de hijos', 'cuantitativa discreta', ['categórica nominal', 'categórica ordinal', 'cuantitativa continua'], 'facil', 'Se cuenta en valores enteros separados.', 'Discreta = se cuenta.'],
+      ['Peso corporal', 'cuantitativa continua', ['categórica nominal', 'categórica ordinal', 'cuantitativa discreta'], 'facil', 'Se mide y puede tomar infinitos valores dentro de un rango.', 'Continua = se mide.'],
+      ['Tiempo exacto para resolver un examen', 'cuantitativa continua', ['categórica ordinal', 'cuantitativa discreta', 'categórica nominal'], 'facil', 'El tiempo es una magnitud continua.', 'Tiempo exacto = continua.'],
+      ['Curso escolar 1°, 2°, 3°', 'categórica ordinal', ['categórica nominal', 'cuantitativa discreta', 'cuantitativa continua'], 'facil', 'Son categorías con orden.', 'Curso = ordinal.'],
+      ['Estado civil', 'categórica nominal', ['categórica ordinal', 'cuantitativa discreta', 'cuantitativa continua'], 'facil', 'Las modalidades no tienen jerarquía natural.', 'Estado civil = nominal.'],
+      ['Número de materias reprobadas', 'cuantitativa discreta', ['categórica nominal', 'categórica ordinal', 'cuantitativa continua'], 'facil', 'Es un conteo de eventos.', 'Número = discreta.'],
+      ['Edad agrupada en menor de edad, 18-25, mayor de 25', 'categórica ordinal', ['cuantitativa continua', 'categórica nominal', 'cuantitativa discreta'], 'media', 'Al agrupar la edad en intervalos ordenados, pasa a tratarse como ordinal.', 'Edad agrupada = ordinal.'],
+      ['Aprobado/Reprobado', 'dicotómica', ['cuantitativa continua', 'ordinal de cuatro niveles', 'discreta acumulada'], 'media', 'Una variable dicotómica representa dos posibles resultados.', 'Dicotómica = dos valores.']
+    ];
+
+    variables.forEach(([example, correct, wrongs, difficulty, explain, memo]) => {
+      BANK.push(makeQuestion(QID++, `¿Cómo se clasifica la variable "${example}"?`, correct, wrongs, difficulty, explain, memo));
+      BANK.push(makeQuestion(QID++, `Selecciona el tipo correcto para la variable "${example}".`, correct, wrongs, difficulty, explain, memo));
+    });
+
+    const methods = [
+      ['Una muestra representativa', 'se parece a la población en su diversidad', ['siempre tiene exactamente el mismo tamaño que la población', 'se obtiene solo por conveniencia', 'es la que contiene únicamente datos numéricos'], 'media', 'La representatividad depende de parecerse a la población, no solo del tamaño.', 'Representativa = parecida.'],
+      ['El error de muestreo', 'aparece al extrapolar desde una muestra a la población', ['desaparece si se usan gráficos', 'solo existe en censos completos', 'se produce únicamente con variables nominales'], 'media', 'Se origina porque se estudia solo una parte del total.', 'Error de muestreo = extrapolar.'],
+      ['Una variable dependiente', 'es la variable explicada o respuesta', ['es la variable omitida', 'es siempre cualitativa', 'es la muestra del estudio'], 'facil', 'Es la variable que se intenta explicar o predecir.', 'Dependiente = respuesta.'],
+      ['Una variable independiente', 'actúa como explicativa o predictora', ['es el total acumulado', 'es siempre un error', 'solo existe en tablas'], 'facil', 'La independiente explica o predice la dependiente.', 'Independiente = explicativa.'],
+      ['Una variable omitida', 'puede generar asociaciones engañosas', ['nunca influye en los resultados', 'equivale al tamaño muestral', 'siempre reemplaza a la dependiente'], 'media', 'Puede actuar desde la sombra y distorsionar interpretaciones.', 'Omitida = sesgo escondido.'],
+      ['Un estudio observacional', 'registra lo que ocurre sin manipular tratamientos', ['interviene activamente sobre las condiciones', 'obliga a usar R', 'elimina cualquier sesgo'], 'media', 'En el observacional se observa, no se manipula.', 'Observacional = observar.'],
+      ['Un estudio experimental', 'manipula tratamientos o condiciones', ['solo describe tablas', 'no requiere hipótesis', 'nunca usa variables dependientes'], 'media', 'El experimental introduce intervención controlada.', 'Experimental = intervenir.'],
+      ['Preguntar por la fuente de los datos', 'ayuda a detectar sesgo potencial', ['sirve solo para decorar el informe', 'elimina los missing automáticamente', 'define la marca de clase'], 'media', 'La fuente puede tener intereses que afecten la neutralidad.', 'Fuente = posible sesgo.'],
+      ['El pensamiento estadístico', 'exige revisar objetivo, fuente, muestreo, sesgo y conclusiones', ['consiste solo en calcular medias', 'se limita a elegir colores de gráficos', 'evita cuestionar la información disponible'], 'media', 'Pensar estadísticamente implica análisis crítico del estudio completo.', 'Pensar estadísticamente = cuestionar.'],
+      ['Los valores perdidos', 'pueden obligar a distinguir porcentajes válidos de porcentajes totales', ['se convierten siempre en ceros', 'hacen imposible cualquier análisis', 'son iguales a los outliers'], 'media', 'Los missing pueden alterar la interpretación de porcentajes.', 'Missing = revisar válidos.']
+    ];
+
+    methods.forEach(([stem, correct, wrongs, difficulty, explain, memo]) => {
+      BANK.push(makeQuestion(QID++, `${stem}: ¿cuál afirmación es correcta?`, correct, wrongs, difficulty, explain, memo));
+      BANK.push(makeQuestion(QID++, `Selecciona la opción correcta sobre ${stem.toLowerCase()}.`, correct, wrongs, difficulty, explain, memo));
+    });
+
+    const graphs = [
+      ['variable categórica', 'diagrama de barras', ['histograma', 'nube de puntos', 'serie temporal'], 'facil', 'Las categorías suelen representarse con barras.', 'Categórica → barras.'],
+      ['variable cuantitativa continua agrupada', 'histograma', ['gráfico de sectores', 'pictograma', 'barras separadas'], 'facil', 'El histograma representa continuidad con barras contiguas.', 'Continua → histograma.'],
+      ['porcentajes de pocas categorías', 'gráfico de sectores', ['nube de puntos', 'histograma', 'polígono de frecuencias'], 'facil', 'El circular es útil para proporciones con pocas categorías.', 'Sectores = proporciones.'],
+      ['relación entre dos variables continuas', 'gráfico de dispersión', ['gráfico de sectores', 'histograma simple', 'pictograma'], 'facil', 'La nube de puntos muestra pares de valores.', 'Dispersión = relación.'],
+      ['evolución de un indicador a lo largo del tiempo', 'serie temporal', ['diagrama de barras apiladas', 'gráfico circular', 'marca de clase'], 'facil', 'La serie temporal coloca el tiempo en el eje horizontal.', 'Tiempo → serie temporal.'],
+      ['comparar magnitudes en un pictograma', 'el área del dibujo', ['solo la altura', 'solo el color', 'solo el grosor del contorno'], 'media', 'La proporción debe verse en el área, no solo en la altura.', 'Pictograma = área.'],
+      ['polígono de frecuencias', 'unión de los puntos medios del histograma', ['acumulación de porcentajes válidos', 'un gráfico circular con líneas', 'la diferencia entre límites del intervalo'], 'media', 'El polígono se obtiene uniendo las marcas centrales de las barras.', 'Polígono = unir puntos medios.'],
+      ['última decisión al elegir un gráfico', 'depende del tipo de variable y del mensaje que se quiere mostrar', ['siempre debe elegirse el gráfico circular', 'siempre deben usarse barras', 'solo importa el color'], 'media', 'El gráfico adecuado depende de la naturaleza del dato y del objetivo comunicativo.', 'Gráfico correcto = variable + objetivo.'],
+      ['tiempo en una serie temporal', 'eje horizontal', ['eje vertical', 'leyenda principal', 'nota al pie'], 'facil', 'Por convención, el tiempo se ubica en el eje X.', 'Tiempo va en X.'],
+      ['una ventaja de un buen gráfico', 'facilita ver patrones rápidamente', ['elimina el sesgo automáticamente', 'sustituye todo el análisis estadístico', 'vuelve innecesario el contexto'], 'facil', 'La visualización ayuda a detectar tendencias y comparaciones con rapidez.', 'Buen gráfico = patrones visibles.']
+    ];
+
+    graphs.forEach(([context, correct, wrongs, difficulty, explain, memo]) => {
+      BANK.push(makeQuestion(QID++, `¿Qué recurso gráfico es el más adecuado para representar ${context}?`, correct, wrongs, difficulty, explain, memo));
+      BANK.push(makeQuestion(QID++, `Al trabajar con ${context}, ¿qué opción es la más apropiada?`, correct, wrongs, difficulty, explain, memo));
+    });
+
+    const bigdata = [
+      ['Big Data', 'exige métodos eficientes por el gran volumen de información', ['siempre tiene pocos datos pero muy limpios', 'hace innecesaria la estadística', 'solo se trabaja con papel y lápiz'], 'dificil', 'El volumen obliga a adaptar métodos y cómputo.', 'Big Data = mucho volumen.'],
+      ['outliers en Big Data', 'no conviene eliminarlos automáticamente sin revisarlos', ['deben borrarse siempre', 'siempre equivalen a errores', 'solo aparecen en datos pequeños'], 'dificil', 'Pueden contener información relevante o segmentos especiales.', 'Outlier no siempre = basura.'],
+      ['complejidad de los datos', 'proviene de la heterogeneidad y dificultad de interpretación', ['aparece solo por falta de internet', 'se elimina sin transformación', 'nunca requiere limpieza'], 'dificil', 'Los datos masivos suelen venir de múltiples fuentes y formatos.', 'Complejidad = heterogeneidad.'],
+      ['infraestructura para Big Data', 'requiere capacidad de cómputo potente', ['no necesita clústeres ni nube', 'funciona mejor evitando paralelización', 'impide usar programación'], 'dificil', 'Los análisis grandes demandan recursos computacionales importantes.', 'Big Data necesita cómputo.'],
+      ['paralelización', 'permite que varios procesadores trabajen al mismo tiempo', ['convierte nominales en continuas', 'elimina el sesgo muestral', 'reemplaza el diseño del estudio'], 'dificil', 'Distribuir el trabajo acelera el procesamiento.', 'Paralelizar = dividir trabajo.'],
+      ['privacidad en Big Data', 'muchos datos requieren autorización o acceso controlado', ['todo dato masivo es público', 'la privacidad deja de importar', 'solo interesa en muestras pequeñas'], 'dificil', 'La huella digital suele estar controlada por empresas o plataformas.', 'Mucho dato existe, pero no todo es accesible.'],
+      ['estadística computacional', 'integra matemáticas, estadística e informática', ['es solo un curso de Excel', 'niega la utilidad del Big Data', 'reemplaza toda inferencia por intuición'], 'dificil', 'Es un puente entre áreas clásicas y emergentes.', 'Computacional = puente.'],
+      ['software R en el curso', 'sirve para programación y análisis estadístico', ['es exclusivamente una red social', 'solo dibuja gráficos 3D', 'reemplaza la necesidad de pensar el problema'], 'media', 'R ayuda a implementar algoritmos y análisis.', 'R = análisis + código.'],
+      ['formular un problema estadístico computacionalmente', 'implica traducirlo a un algoritmo ejecutable', ['significa evitar cualquier programación', 'consiste solo en cambiar colores de gráficos', 'elimina la necesidad de datos'], 'dificil', 'La estadística computacional convierte problemas en soluciones implementables.', 'Problema → algoritmo.'],
+      ['reutilización de código', 'permite adaptar soluciones sencillas a problemas más complejos', ['impide validar resultados', 'vuelve innecesario comprender el caso', 'garantiza ausencia total de errores'], 'media', 'Las plantillas agilizan desarrollo y escalamiento.', 'Reutilizar = adaptar.']
+    ];
+
+    bigdata.forEach(([topic, correct, wrongs, difficulty, explain, memo]) => {
+      BANK.push(makeQuestion(QID++, `Respecto a ${topic}, ¿qué afirmación es correcta?`, correct, wrongs, difficulty, explain, memo));
+      BANK.push(makeQuestion(QID++, `Selecciona la opción correcta sobre ${topic}.`, correct, wrongs, difficulty, explain, memo));
+    });
+
+    const masterBank = (() => {
+      const seen = new Set();
+      const unique = [];
+      for (const item of BANK) {
+        if (!seen.has(item.q)) {
+          seen.add(item.q);
+          unique.push(item);
+        }
+      }
+      return unique.slice(0, 200);
+    })();
+
+    function getSelectedDifficulty() {
+      const selected = document.querySelector('input[name="difficulty"]:checked');
+      return selected ? selected.value : 'facil';
+    }
+
+    function difficultyLabel(value) {
+      return value === 'facil' ? 'Fácil' : value === 'media' ? 'Media' : value === 'dificil' ? 'Difícil' : 'Mixta';
+    }
+
+    function getSourceBank(level) {
+      if (level === 'mixta') return masterBank;
+      const filtered = masterBank.filter(q => q.difficulty === level);
+      return filtered.length >= QUESTION_COUNT ? filtered : masterBank;
+    }
+
+    function normalizeQuestion(q) {
+      const options = shuffle([q.correct, ...q.wrongs]);
+      return {
+        id: q.id,
+        q: q.q,
+        options,
+        correctIndex: options.indexOf(q.correct),
+        explain: q.explain,
+        memo: q.memo,
+        difficulty: q.difficulty
+      };
+    }
+
+    function buildExam() {
+      const level = getSelectedDifficulty();
+      const source = getSourceBank(level);
+      const chosen = shuffle(source).slice(0, QUESTION_COUNT);
+      return chosen.map(normalizeQuestion);
+    }
+
+    let questions = buildExam();
+    let current = 0;
+    let score = 0;
+    let selected = null;
+    let answered = false;
+    let summary = [];
+    let timerInterval = null;
+    let timeLeft = EXAM_TIME_SECONDS;
+    let timeoutFinish = false;
+
+    const startBtn = document.getElementById('startBtn');
+    const newExamBtn = document.getElementById('newExamBtn');
+    const quizWrap = document.getElementById('quizWrap');
+    const resultsBox = document.getElementById('resultsBox');
+    const counter = document.getElementById('counter');
+    const scoreNow = document.getElementById('scoreNow');
+    const progressBar = document.getElementById('progressBar');
+    const questionText = document.getElementById('questionText');
+    const optionsBox = document.getElementById('optionsBox');
+    const feedbackBox = document.getElementById('feedbackBox');
+    const checkBtn = document.getElementById('checkBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const restartBtn = document.getElementById('restartBtn');
+    const retryBtn = document.getElementById('retryBtn');
+    const finalScore = document.getElementById('finalScore');
+    const finalMsg = document.getElementById('finalMsg');
+    const summaryList = document.getElementById('summaryList');
+    const bankSize = document.getElementById('bankSize');
+    const difficultyNow = document.getElementById('difficultyNow');
+    const timeText = document.getElementById('timeText');
+    const timeBar = document.getElementById('timeBar');
+
+    bankSize.textContent = masterBank.length;
+
+    function formatTime(seconds) {
+      const min = Math.floor(seconds / 60).toString().padStart(2, '0');
+      const sec = (seconds % 60).toString().padStart(2, '0');
+      return `${min}:${sec}`;
+    }
+
+    function updateTimerUI() {
+      timeText.textContent = formatTime(timeLeft);
+      const percent = Math.max(0, (timeLeft / EXAM_TIME_SECONDS) * 100);
+      timeBar.style.width = `${percent}%`;
+      timeBar.style.background = percent <= 25
+        ? 'linear-gradient(90deg, #f59e0b, #ef4444)'
+        : 'linear-gradient(90deg, var(--accent), var(--accent2))';
+    }
+
+    function stopTimer() {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+    }
+
+    function startTimer() {
+      stopTimer();
+      updateTimerUI();
+      timerInterval = setInterval(() => {
+        timeLeft--;
+        updateTimerUI();
+        if (timeLeft <= 0) {
+          timeLeft = 0;
+          updateTimerUI();
+          timeoutFinish = true;
+          showResults();
+        }
+      }, 1000);
+    }
+
+    function prepareExam() {
+      questions = buildExam();
+      current = 0;
+      score = 0;
+      selected = null;
+      answered = false;
+      summary = [];
+      timeLeft = EXAM_TIME_SECONDS;
+      timeoutFinish = false;
+      difficultyNow.textContent = difficultyLabel(getSelectedDifficulty());
+      updateTimerUI();
+      stopTimer();
+    }
+
+    function startExam() {
+      prepareExam();
+      quizWrap.style.display = 'block';
+      resultsBox.style.display = 'none';
+      renderQuestion();
+      startTimer();
+    }
+
+    function renderQuestion() {
+      const q = questions[current];
+      counter.textContent = `Pregunta ${current + 1} de ${questions.length}`;
+      scoreNow.textContent = score;
+      progressBar.style.width = `${(current / questions.length) * 100}%`;
+      questionText.textContent = q.q;
+      optionsBox.innerHTML = '';
+      feedbackBox.style.display = 'none';
+      feedbackBox.innerHTML = '';
+      selected = null;
+      answered = false;
+      nextBtn.disabled = true;
+
+      q.options.forEach((opt, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'option';
+        btn.innerHTML = `<strong>${String.fromCharCode(65 + idx)}.</strong> ${opt}`;
+        btn.addEventListener('click', () => {
+          if (answered) return;
+          selected = idx;
+          document.querySelectorAll('.option').forEach(el => el.classList.remove('selected'));
+          btn.classList.add('selected');
+        });
+        optionsBox.appendChild(btn);
+      });
+    }
+
+    function checkAnswer() {
+      if (selected === null || answered) return;
+      answered = true;
+      const q = questions[current];
+      const nodes = document.querySelectorAll('.option');
+
+      nodes.forEach((node, idx) => {
+        if (idx === q.correctIndex) node.classList.add('correct');
+        if (idx === selected && idx !== q.correctIndex) node.classList.add('incorrect');
+      });
+
+      const ok = selected === q.correctIndex;
+      if (ok) score++;
+      scoreNow.textContent = score;
+      feedbackBox.style.display = 'block';
+      feedbackBox.innerHTML = `
+        <strong>${ok ? '✅ Correcta' : '❌ Incorrecta'}</strong><br>
+        <div><strong>Respuesta correcta:</strong> ${String.fromCharCode(65 + q.correctIndex)}. ${q.options[q.correctIndex]}</div>
+        <div style="margin-top:8px;"><strong>Explicación breve:</strong> ${q.explain}</div>
+        <div class="memoriza"><strong>Para memorizar rápido:</strong> ${q.memo}</div>
+      `;
+
+      summary.push({
+        q: q.q,
+        ok,
+        correct: q.options[q.correctIndex],
+        memo: q.memo
+      });
+
+      nextBtn.disabled = false;
+      progressBar.style.width = `${((current + 1) / questions.length) * 100}%`;
+    }
+
+    function nextQuestion() {
+      if (!answered) return;
+      current++;
+      if (current >= questions.length) showResults();
+      else renderQuestion();
+    }
+
+    function renderSummary() {
+      summaryList.innerHTML = '';
+      summary.forEach((item, i) => {
+        const div = document.createElement('div');
+        div.className = 'summary-item';
+        div.innerHTML = `
+          <div><strong>${i + 1}. ${item.q}</strong><span class="tag ${item.ok ? 'ok' : 'bad'}">${item.ok ? 'Bien' : 'Repasar'}</span></div>
+          <div style="margin-top:8px;"><strong>Correcta:</strong> ${item.correct}</div>
+          <div style="margin-top:6px; color:#fde68a;"><strong>Memoria rápida:</strong> ${item.memo}</div>
+        `;
+        summaryList.appendChild(div);
+      });
+    }
+
+    function showResults() {
+      stopTimer();
+      quizWrap.style.display = 'none';
+      resultsBox.style.display = 'block';
+      finalScore.textContent = `${score} / ${questions.length}`;
+
+      let msg = 'Buen trabajo.';
+      if (score >= 18) msg = 'Excelente nivel. Vas muy sólido para el examen.';
+      else if (score >= 15) msg = 'Buen nivel. Repasa definiciones, gráficos y Big Data.';
+      else if (score >= 12) msg = 'Nivel aceptable, pero conviene repasar sesgo, frecuencias y tipos de variables.';
+      else msg = 'Necesitas reforzar conceptos base antes del examen.';
+
+      finalMsg.textContent = timeoutFinish
+        ? `Se terminó el tiempo de 20 minutos. El intento se cerró automáticamente y se calificó hasta donde alcanzaste a responder. ${msg}`
+        : `${msg} Tiempo restante: ${formatTime(timeLeft)}.`;
+
+      renderSummary();
+    }
+
+    startBtn.addEventListener('click', startExam);
+    newExamBtn.addEventListener('click', startExam);
+    checkBtn.addEventListener('click', checkAnswer);
+    nextBtn.addEventListener('click', nextQuestion);
+    restartBtn.addEventListener('click', startExam);
+    retryBtn.addEventListener('click', startExam);
+  </script>
+</body>
+</html>
