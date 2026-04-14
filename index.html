@@ -3,481 +3,866 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Simulador Final - Análisis e Interpretación de Datos</title>
+  <title>Simulador UNIR - Banco de 200 preguntas</title>
   <style>
     :root {
-      --bg: #f6f8fb;
-      --card: #ffffff;
-      --text: #1f2937;
-      --muted: #6b7280;
-      --primary: #0f766e;
-      --primary-2: #14b8a6;
-      --good: #166534;
-      --good-bg: #dcfce7;
-      --bad: #991b1b;
-      --bad-bg: #fee2e2;
-      --border: #dbe4ee;
-      --shadow: 0 8px 26px rgba(15, 23, 42, 0.08);
+      --bg: #0f172a;
+      --panel: #111827;
+      --card: #1f2937;
+      --soft: #334155;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --ok: #16a34a;
+      --bad: #dc2626;
+      --accent: #38bdf8;
+      --accent2: #22c55e;
+      --warning: #f59e0b;
     }
     * { box-sizing: border-box; }
     body {
       margin: 0;
-      font-family: Inter, Arial, sans-serif;
-      background: linear-gradient(180deg, #ecfeff 0%, var(--bg) 25%);
+      font-family: Arial, Helvetica, sans-serif;
+      background: linear-gradient(180deg, var(--bg), #020617);
       color: var(--text);
     }
-    .wrap {
-      max-width: 980px;
+    .container {
+      max-width: 1080px;
       margin: 0 auto;
       padding: 24px;
     }
     .hero, .card {
-      background: var(--card);
-      border: 1px solid var(--border);
+      background: rgba(17, 24, 39, 0.95);
+      border: 1px solid rgba(148, 163, 184, 0.18);
       border-radius: 18px;
-      box-shadow: var(--shadow);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
     }
     .hero {
       padding: 24px;
       margin-bottom: 20px;
     }
-    h1 {
-      margin: 0 0 8px;
-      font-size: 2rem;
-      line-height: 1.15;
-    }
-    .sub {
-      margin: 0;
-      color: var(--muted);
-      line-height: 1.5;
-    }
-    .toolbar {
-      display: flex;
+    h1, h2, h3 { margin-top: 0; }
+    .sub { color: var(--muted); line-height: 1.55; }
+    .row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
       gap: 12px;
-      flex-wrap: wrap;
       margin-top: 18px;
     }
+    .pill {
+      background: rgba(56, 189, 248, 0.1);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      color: #bae6fd;
+      border-radius: 999px;
+      padding: 10px 14px;
+      font-size: 0.95rem;
+      text-align: center;
+    }
+    .controls { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
     button {
       border: none;
       border-radius: 12px;
       padding: 12px 16px;
       cursor: pointer;
-      font-weight: 700;
-      font-size: 0.95rem;
+      font-weight: bold;
+      transition: transform .15s ease, opacity .15s ease;
     }
-    .btn-primary { background: var(--primary); color: #fff; }
-    .btn-secondary { background: #e6fffb; color: var(--primary); border: 1px solid #a7f3d0; }
-    .meta {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 12px;
-      margin: 20px 0;
+    button:hover { transform: translateY(-1px); }
+    .primary { background: var(--accent); color: #06202d; }
+    .secondary { background: #334155; color: white; }
+    .success { background: var(--accent2); color: #052e16; }
+    .warning { background: var(--warning); color: #3b2400; }
+    .quiz-wrap, .results { display: none; }
+    .card { padding: 20px; margin-bottom: 16px; }
+    .topbar {
+      display: flex; justify-content: space-between; gap: 10px; align-items: center; flex-wrap: wrap;
     }
-    .pill {
-      background: #f8fafc;
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 12px 14px;
+    .progress {
+      width: 100%; height: 12px; background: #0b1220; border-radius: 999px; overflow: hidden;
+      border: 1px solid rgba(148, 163, 184, 0.15); margin-top: 12px;
     }
-    .pill strong { display: block; font-size: 1.05rem; }
-    .question {
-      padding: 20px;
-      margin-bottom: 16px;
+    .progress-bar {
+      height: 100%; width: 0; background: linear-gradient(90deg, var(--accent), var(--accent2));
+      transition: width .3s ease;
     }
-    .question h3 {
-      margin: 0 0 12px;
-      font-size: 1.05rem;
-      line-height: 1.45;
-    }
-    .options {
-      display: grid;
-      gap: 10px;
-    }
+    .question { font-size: 1.15rem; line-height: 1.55; margin-bottom: 18px; }
     .option {
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 12px 14px;
-      transition: .18s ease;
-      background: #fff;
+      display: block; width: 100%; text-align: left; background: #0f172a; color: var(--text);
+      border: 1px solid rgba(148,163,184,.2); margin-bottom: 10px; padding: 14px; border-radius: 14px;
     }
-    .option:hover { border-color: var(--primary-2); background: #f0fdfa; }
-    .option input { margin-right: 10px; }
+    .option.selected { outline: 2px solid rgba(56,189,248,.55); }
+    .option.correct { background: rgba(22,163,74,.15); border-color: rgba(22,163,74,.5); }
+    .option.incorrect { background: rgba(220,38,38,.14); border-color: rgba(220,38,38,.5); }
     .feedback {
-      margin-top: 14px;
-      padding: 12px 14px;
-      border-radius: 12px;
-      display: none;
-      line-height: 1.5;
+      margin-top: 16px; padding: 14px; border-radius: 14px; background: #0b1220;
+      border: 1px solid rgba(148,163,184,.18); display: none;
     }
-    .correct { background: var(--good-bg); color: var(--good); border: 1px solid #86efac; }
-    .incorrect { background: var(--bad-bg); color: var(--bad); border: 1px solid #fca5a5; }
-    .result {
-      position: sticky;
-      bottom: 12px;
-      margin-top: 22px;
-      padding: 16px 18px;
-      display: none;
+    .memoriza { color: #fde68a; margin-top: 10px; }
+    .score { font-size: 2rem; font-weight: bold; margin: 8px 0; }
+    .summary-item { border-top: 1px solid rgba(148,163,184,.15); padding: 14px 0; }
+    .tag {
+      display: inline-block; font-size: .82rem; padding: 4px 8px; border-radius: 999px;
+      margin-left: 8px; vertical-align: middle;
     }
-    .score {
-      font-size: 1.25rem;
-      font-weight: 800;
-      margin-bottom: 8px;
+    .tag.ok { background: rgba(22,163,74,.18); color: #86efac; }
+    .tag.bad { background: rgba(220,38,38,.18); color: #fca5a5; }
+    .footer-note { color: var(--muted); font-size: .92rem; margin-top: 14px; }
+    code.inline { background: rgba(148,163,184,.12); padding: 2px 6px; border-radius: 6px; }
+    .mini-grid {
+      display:grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap: 10px; margin-top: 12px;
     }
-    .small {
-      color: var(--muted);
-      font-size: 0.95rem;
-      line-height: 1.5;
-    }
-    .footer-note {
-      margin-top: 18px;
-      color: var(--muted);
-      font-size: .92rem;
-    }
-    @media (max-width: 700px) {
-      .wrap { padding: 14px; }
-      h1 { font-size: 1.55rem; }
+    .mini-card {
+      background: #0b1220; border:1px solid rgba(148,163,184,.16); border-radius: 14px; padding: 12px;
     }
   </style>
 </head>
 <body>
-  <div class="wrap">
+  <div class="container">
     <section class="hero">
-      <h1>Simulador final: Análisis e Interpretación de Datos</h1>
-      <p class="sub">20 preguntas tipo examen final, con 4 opciones, calificación automática y explicación breve para memorizar rápido. Basado en los temas del material de la asignatura: estadística, muestreo, tipos de variables, gráficos, sesgo, Big Data, estadística computacional, probabilidad, distribución muestral e intervalos de confianza.</p>
-      <div class="meta">
-        <div class="pill"><strong>20 preguntas</strong><span>Formato tipo test</span></div>
-        <div class="pill"><strong>4 opciones</strong><span>Una correcta por pregunta</span></div>
-        <div class="pill"><strong>Autoevaluación</strong><span>Retroalimentación inmediata</span></div>
+      <h1>Simulador de examen final · versión banco de 200</h1>
+      <div class="sub">
+        Simulador web para <strong>Análisis e Interpretación de Datos</strong>. En cada intento se toman <strong>20 preguntas aleatorias</strong> de un banco de <strong>200</strong>, y además se mezclan también las opciones de respuesta en cada ejecución.
       </div>
-      <div class="toolbar">
-        <button class="btn-primary" id="gradeBtn">Calificar simulador</button>
-        <button class="btn-secondary" id="resetBtn">Reiniciar respuestas</button>
+      <div class="row">
+        <div class="pill">Banco total: 200</div>
+        <div class="pill">Cada intento: 20</div>
+        <div class="pill">Preguntas aleatorias</div>
+        <div class="pill">Opciones mezcladas</div>
       </div>
-      <p class="footer-note">Consejo express: memoriza palabras ancla como <strong>muestra representativa</strong>, <strong>sesgo</strong>, <strong>histograma</strong>, <strong>TCL</strong>, <strong>IC</strong>, <strong>R</strong>, <strong>Big Data</strong>.</p>
+      <div class="controls">
+        <button class="primary" id="startBtn">Iniciar simulador</button>
+        <button class="secondary" id="newExamBtn">Generar nuevo examen</button>
+      </div>
+      <div class="mini-grid">
+        <div class="mini-card"><strong>Modo actual</strong><br><span class="sub">Retroalimentación inmediata pregunta por pregunta.</span></div>
+        <div class="mini-card"><strong>Hospedaje</strong><br><span class="sub">Listo para GitHub Pages como <code class="inline">index.html</code>.</span></div>
+      </div>
+      <div class="footer-note">
+        La estructura está basada en los conceptos del material de la asignatura: estadística, muestreo, tipos de variables, diseño de experimentos, frecuencias, gráficos, Big Data y estadística computacional.
+      </div>
     </section>
 
-    <div id="quiz"></div>
+    <section class="quiz-wrap" id="quizWrap">
+      <div class="card">
+        <div class="topbar">
+          <div><strong id="counter">Pregunta 1 de 20</strong></div>
+          <div>Correctas: <strong id="scoreNow">0</strong></div>
+          <div>Banco total: <strong id="bankSize">200</strong></div>
+        </div>
+        <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+      </div>
 
-    <section class="card result" id="resultBox">
-      <div class="score" id="scoreText"></div>
-      <div class="small" id="scoreAdvice"></div>
+      <div class="card">
+        <div class="question" id="questionText"></div>
+        <div id="optionsBox"></div>
+        <div class="feedback" id="feedbackBox"></div>
+        <div class="controls">
+          <button class="warning" id="checkBtn">Revisar respuesta</button>
+          <button class="primary" id="nextBtn" disabled>Siguiente</button>
+          <button class="secondary" id="restartBtn">Nuevo examen aleatorio</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="results" id="resultsBox">
+      <div class="card">
+        <h2>Resultado final</h2>
+        <div class="score" id="finalScore"></div>
+        <div class="sub" id="finalMsg"></div>
+        <div class="controls">
+          <button class="success" id="retryBtn">Intentar con otro examen</button>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Resumen para repasar</h3>
+        <div id="summaryList"></div>
+      </div>
     </section>
   </div>
 
   <script>
-    const questions = [
+    const QUESTION_COUNT = 20;
+
+    const topic1Base = [
       {
-        q: "1. ¿Cuál definición resume mejor qué es la estadística?",
+        q: "¿Qué definición resume mejor a la estadística según el enfoque del curso?",
         options: [
-          "La ciencia que solo organiza números en tablas.",
+          "La ciencia de memorizar fórmulas matemáticas.",
           "La ciencia que permite aprender de los datos.",
-          "La técnica que reemplaza la lógica por gráficos.",
-          "La parte de la informática que dibuja reportes."
+          "La técnica para dibujar gráficos atractivos.",
+          "El arte de convertir cualquier información en porcentajes."
         ],
-        correct: 1,
-        explanation: "Memoriza: estadística = aprender de los datos. No es solo contar ni graficar."
+        answer: "La ciencia que permite aprender de los datos.",
+        explain: "La estadística se entiende como una ciencia orientada a aprender de los datos y obtener conclusiones.",
+        memo: "Estadística = aprender de los datos."
       },
       {
-        q: "2. Una muestra es representativa cuando:",
+        q: "¿Cuál es una mejor descripción de un dato en estadística?",
         options: [
-          "Tiene el mismo tamaño que la población.",
-          "Tiene una diversidad muy parecida a la población.",
-          "Siempre supera los 1,000 casos.",
-          "Solo contiene individuos fáciles de medir."
+          "Un número sin contexto.",
+          "Una observación o medida con contexto.",
+          "Una opinión del investigador.",
+          "Un gráfico circular."
         ],
-        correct: 1,
-        explanation: "La idea clave es semejanza con la población, no tamaño enorme por sí solo."
+        answer: "Una observación o medida con contexto.",
+        explain: "En estadística, un dato adquiere sentido cuando está contextualizado respecto al fenómeno observado.",
+        memo: "Dato útil = valor + contexto."
       },
       {
-        q: "3. El error de muestreo aparece porque:",
+        q: "La población en estadística se refiere a:",
         options: [
-          "Se estudia una parte de la población y se infiere sobre el total.",
-          "Todos los datos están mal capturados.",
-          "Los gráficos siempre deforman la realidad.",
-          "Las variables cuantitativas son más difíciles."
+          "Los individuos o elementos sobre los que se desea estudiar algo.",
+          "Solo a las personas de una ciudad.",
+          "La muestra final ya encuestada.",
+          "El software usado para analizar."
         ],
-        correct: 0,
-        explanation: "Memoriza: muestra ≠ población; al extrapolar siempre existe error de muestreo."
+        answer: "Los individuos o elementos sobre los que se desea estudiar algo.",
+        explain: "La población es el conjunto total de interés del cual puede extraerse una muestra.",
+        memo: "Población = conjunto total de interés."
       },
       {
-        q: "4. ¿Cuál de las siguientes variables es cuantitativa discreta?",
+        q: "¿Qué caracteriza a una muestra representativa?",
         options: [
+          "Su gran tamaño únicamente.",
+          "Su semejanza en diversidad con la población.",
+          "Que se elija por conveniencia.",
+          "Que tenga solo datos numéricos."
+        ],
+        answer: "Su semejanza en diversidad con la población.",
+        explain: "La representación depende de parecerse a la población en estructura y diversidad.",
+        memo: "Representativa = parecida a la población."
+      },
+      {
+        q: "El error de muestreo aparece porque:",
+        options: [
+          "se analiza una parte y no el total de la población.",
+          "siempre hay datos perdidos.",
+          "se usan gráficos en vez de texto.",
+          "las variables son continuas."
+        ],
+        answer: "se analiza una parte y no el total de la población.",
+        explain: "El error de muestreo es inherente a extrapolar desde una muestra a la población.",
+        memo: "Muestra ≠ población completa."
+      },
+      {
+        q: "La inferencia estadística consiste en:",
+        options: [
+          "describir una tabla ya terminada.",
+          "pasar de la muestra a conclusiones sobre la población.",
+          "dibujar un histograma.",
+          "eliminar valores perdidos."
+        ],
+        answer: "pasar de la muestra a conclusiones sobre la población.",
+        explain: "La inferencia usa información muestral para deducir propiedades de la población.",
+        memo: "Inferir = generalizar de muestra a población."
+      },
+      {
+        q: "¿Cuál es un ejemplo de variable categórica nominal?",
+        options: [
+          "Nivel de satisfacción bajo-medio-alto.",
           "Color de ojos.",
-          "Nivel de satisfacción: bajo, medio, alto.",
-          "Número de asignaturas reprobadas.",
-          "Peso corporal exacto."
+          "Tiempo exacto de espera.",
+          "Número de hijos."
         ],
-        correct: 2,
-        explanation: "Discreta = cuenta valores separados. Ejemplo clásico: número de hijos o materias reprobadas."
+        answer: "Color de ojos.",
+        explain: "Las nominales son categorías sin orden natural.",
+        memo: "Nominal = categorías sin orden."
       },
       {
-        q: "5. Una variable como la edad puede registrarse como ordinal cuando:",
+        q: "¿Cuál es un ejemplo de variable categórica ordinal?",
         options: [
-          "Se mide con decimales exactos.",
-          "Se agrupa en intervalos de edad.",
-          "Se convierte en color.",
-          "Se elimina de la base de datos."
+          "Número de asignaturas.",
+          "Color favorito.",
+          "Nivel de satisfacción bajo-medio-alto.",
+          "Peso corporal."
         ],
-        correct: 1,
-        explanation: "La edad es continua en teoría, pero puede recodificarse por rangos y entonces manejarse ordinalmente."
+        answer: "Nivel de satisfacción bajo-medio-alto.",
+        explain: "Las ordinales son categorías con orden natural entre sus niveles.",
+        memo: "Ordinal = categorías ordenadas."
       },
       {
-        q: "6. En un estudio observacional, el investigador:",
+        q: "¿Cuál es un ejemplo de variable cuantitativa discreta?",
         options: [
-          "Aplica tratamientos y manipula condiciones.",
-          "Observa sin intervenir ni aplicar tratamientos.",
-          "Trabaja solo con variables continuas.",
-          "Siempre usa laboratorio."
+          "Número de hijos.",
+          "Altura en metros.",
+          "Color de pelo.",
+          "Temperatura exacta."
         ],
-        correct: 1,
-        explanation: "Observacional = observar; experimental = intervenir. Esa oposición suele preguntarse mucho."
+        answer: "Número de hijos.",
+        explain: "Las discretas se cuentan en valores aislados, usualmente enteros.",
+        memo: "Discreta = se cuenta."
       },
       {
-        q: "7. ¿Qué concepto describe una posible distorsión sistemática en un estudio?",
+        q: "¿Cuál es un ejemplo de variable cuantitativa continua?",
         options: [
-          "Sesgo.",
-          "Frecuencia relativa.",
-          "Marca de clase.",
-          "Varianza nula."
+          "Número de autos.",
+          "Curso escolar.",
+          "Peso corporal.",
+          "Estado civil."
         ],
-        correct: 0,
-        explanation: "Palabra ancla: sesgo. Aparece cuando la fuente, el diseño o la medición deforman resultados."
+        answer: "Peso corporal.",
+        explain: "Las continuas pueden tomar infinitos valores dentro de un rango.",
+        memo: "Continua = se mide."
       },
       {
-        q: "8. ¿Qué gráfico suele ser más apropiado para una variable cuantitativa continua agrupada en intervalos?",
+        q: "La variable dependiente también se conoce como:",
         options: [
-          "Gráfico de sectores.",
-          "Pictograma.",
-          "Histograma.",
-          "Diagrama de barras separadas para cualitativas."
+          "variable ruido.",
+          "variable explicada o respuesta.",
+          "variable omitida.",
+          "variable de control."
         ],
-        correct: 2,
-        explanation: "Histograma = continuo. Barras pegadas transmiten continuidad."
+        answer: "variable explicada o respuesta.",
+        explain: "Es la variable cuyo comportamiento se intenta explicar o predecir.",
+        memo: "Dependiente = respuesta."
       },
       {
-        q: "9. ¿Qué gráfico es especialmente útil para representar dos variables continuas en cada individuo?",
+        q: "La variable independiente también se conoce como:",
         options: [
-          "Nube de puntos o diagrama de dispersión.",
-          "Gráfico circular.",
-          "Pictograma militar.",
-          "Tabla de contingencia simple."
+          "variable predictora o explicativa.",
+          "variable perdida.",
+          "variable error.",
+          "variable secundaria."
         ],
-        correct: 0,
-        explanation: "Dos continuas → dispersión. Piensa en relación altura-peso, ingreso-gasto, etc."
+        answer: "variable predictora o explicativa.",
+        explain: "Es la variable usada para explicar o predecir la dependiente.",
+        memo: "Independiente = explicativa."
       },
       {
-        q: "10. En un pictograma correcto, la magnitud debe ser proporcional principalmente a:",
+        q: "Las variables omitidas son peligrosas porque:",
         options: [
-          "La altura del dibujo.",
-          "El ancho del dibujo.",
-          "El área del dibujo.",
-          "El color del dibujo."
+          "pueden inducir relaciones engañosas.",
+          "siempre son irrelevantes.",
+          "solo aparecen en medicina.",
+          "sustituyen la muestra."
         ],
-        correct: 2,
-        explanation: "Error clásico: escalar solo la altura. En pictogramas, lo correcto es respetar el área."
+        answer: "pueden inducir relaciones engañosas.",
+        explain: "Si una variable importante no se considera, puede generar interpretaciones erróneas o sesgo.",
+        memo: "Variable omitida = posible sesgo escondido."
       },
       {
-        q: "11. En Big Data, uno de los problemas centrales para la estadística clásica es:",
+        q: "Una variable dicotómica se usa para representar:",
         options: [
-          "Que ahora faltan datos.",
-          "Que hay tantos datos que analizarlos eficientemente es difícil.",
-          "Que ya no se necesitan métodos estadísticos.",
-          "Que las muestras desaparecen por completo."
+          "dos resultados posibles, como 1 y 0.",
+          "cuatro categorías ordenadas.",
+          "solo magnitudes continuas.",
+          "intervalos de clase."
         ],
-        correct: 1,
-        explanation: "Memoriza esta frase: tenemos tantos datos que no hay manera simple de analizarlos."
+        answer: "dos resultados posibles, como 1 y 0.",
+        explain: "Las dicotómicas modelan la ocurrencia o no de un evento.",
+        memo: "Dicotómica = sí/no, 1/0."
       },
       {
-        q: "12. Respecto a los outliers en entornos Big Data, el material sugiere que:",
+        q: "¿Qué distingue a un estudio experimental de uno observacional?",
         options: [
-          "Siempre deben eliminarse automáticamente.",
-          "Nunca existen en grandes volúmenes.",
-          "Pueden ser tantos que eliminarlos no siempre sea lo más adecuado.",
-          "Solo importan en muestras pequeñas."
+          "En el experimental se manipulan tratamientos o condiciones.",
+          "En el observacional siempre hay causalidad.",
+          "En el experimental no hay medición.",
+          "No hay diferencia real."
         ],
-        correct: 2,
-        explanation: "En Big Data, los outliers pueden contener información relevante y masiva."
+        answer: "En el experimental se manipulan tratamientos o condiciones.",
+        explain: "El experimento interviene sobre la realidad; el observacional solo la registra.",
+        memo: "Experimental = intervenir."
       },
       {
-        q: "13. La estadística computacional puede entenderse como un puente entre:",
+        q: "En pensamiento estadístico, preguntar por la fuente de los datos ayuda a detectar:",
         options: [
-          "Arte y filosofía.",
-          "Matemáticas, estadística e informática con campos emergentes.",
-          "Bases de datos y redes sociales únicamente.",
-          "Hardware y marketing."
+          "sesgo potencial.",
+          "solo errores aritméticos.",
+          "el tipo de impresora usada.",
+          "la marca del software."
         ],
-        correct: 1,
-        explanation: "Idea central del tema 2: une ciencias clásicas con IA, ML, bioinformática, ciberseguridad, etc."
+        answer: "sesgo potencial.",
+        explain: "La fuente puede tener intereses que afecten la neutralidad del estudio.",
+        memo: "¿Quién produce los datos? = pregunta clave."
       },
       {
-        q: "14. En la asignatura, el software destacado como herramienta estadística es:",
+        q: "Una frecuencia absoluta indica:",
         options: [
-          "Photoshop.",
-          "R.",
-          "AutoCAD.",
-          "Blender."
+          "cuántas veces aparece una categoría o valor.",
+          "el porcentaje acumulado.",
+          "la media muestral.",
+          "el punto medio del intervalo."
         ],
-        correct: 1,
-        explanation: "Muy memorizable: lenguaje/entorno estadístico principal del tema = R."
+        answer: "cuántas veces aparece una categoría o valor.",
+        explain: "Cuenta el número de observaciones en una modalidad.",
+        memo: "Absoluta = conteo directo."
       },
       {
-        q: "15. Si los tres primeros lanzamientos de una moneda fueron cara, la probabilidad de obtener cara en el cuarto lanzamiento de una moneda equilibrada es:",
+        q: "La frecuencia relativa se obtiene como:",
         options: [
-          "1/4",
-          "1/8",
-          "1/2",
-          "1"
+          "frecuencia absoluta dividida por el total.",
+          "suma de todas las frecuencias.",
+          "límite superior menos límite inferior.",
+          "porcentaje menos 100."
         ],
-        correct: 2,
-        explanation: "Lanzamientos independientes. Lo pasado no cambia la probabilidad del siguiente."
+        answer: "frecuencia absoluta dividida por el total.",
+        explain: "Representa la proporción de una categoría respecto al total observado.",
+        memo: "Relativa = parte / total."
       },
       {
-        q: "16. En una distribución normal, al aumentar σ (sigma):",
+        q: "La última frecuencia absoluta acumulada coincide con:",
         options: [
-          "La campana se vuelve más angosta y alta.",
-          "Los datos tienden a estar más dispersos y la campana más achatada.",
-          "La media cambia automáticamente.",
-          "La distribución deja de ser normal."
+          "el tamaño de la muestra.",
+          "la mediana.",
+          "la desviación típica.",
+          "la primera categoría."
         ],
-        correct: 1,
-        explanation: "Sigma grande = mayor dispersión y campana más baja/ancha."
+        answer: "el tamaño de la muestra.",
+        explain: "La frecuencia acumulada final suma todas las observaciones y, por tanto, vale N.",
+        memo: "Acumulada final = total."
       },
       {
-        q: "17. El Teorema Central del Límite es importante porque ayuda a entender:",
+        q: "La marca de clase en una variable continua agrupada es:",
         options: [
-          "La distribución de estadísticos muestrales como la media.",
-          "La ortografía de los datos.",
-          "El color de un histograma.",
-          "Solo la mediana poblacional exacta."
+          "el punto medio del intervalo.",
+          "el valor más repetido.",
+          "la frecuencia absoluta.",
+          "el límite inferior."
         ],
-        correct: 0,
-        explanation: "TCL = clave para la distribución de la media muestral y la inferencia."
-      },
-      {
-        q: "18. La estimación por intervalos se usa porque:",
-        options: [
-          "La estimación puntual no informa por sí sola cuán precisa es.",
-          "Es menos rigurosa que una estimación puntual.",
-          "Evita usar muestras.",
-          "Solo sirve cuando la media vale cero."
-        ],
-        correct: 0,
-        explanation: "IC = parámetro probable + margen de error. Da contexto a la estimación puntual."
-      },
-      {
-        q: "19. Si la varianza poblacional es desconocida, para construir un intervalo de confianza para la media suele emplearse:",
-        options: [
-          "Distribución t de Student.",
-          "Solo chi-cuadrada en cualquier caso.",
-          "Distribución uniforme.",
-          "Distribución exponencial."
-        ],
-        correct: 0,
-        explanation: "Regla clásica de examen: sigma desconocida → t de Student."
-      },
-      {
-        q: "20. Una interpretación correcta de un intervalo de confianza del 95% para una media poblacional es:",
-        options: [
-          "El 95% de los individuos cae dentro del intervalo.",
-          "Tenemos un 95% de confianza de que el parámetro poblacional está contenido en el intervalo construido.",
-          "La muestra futura será idéntica al intervalo.",
-          "El parámetro cambia para ajustarse al intervalo."
-        ],
-        correct: 1,
-        explanation: "No habla del 95% de individuos, sino del nivel de confianza sobre el parámetro."
+        answer: "el punto medio del intervalo.",
+        explain: "Sirve como valor representativo del intervalo.",
+        memo: "Marca de clase = centro."
       }
     ];
 
-    const quiz = document.getElementById('quiz');
+    const topic2Base = [
+      {
+        q: "Para una variable categórica, el gráfico más habitual es:",
+        options: [
+          "diagrama de barras.",
+          "histograma.",
+          "nube de puntos.",
+          "serie temporal."
+        ],
+        answer: "diagrama de barras.",
+        explain: "Las barras representan bien categorías y sus frecuencias.",
+        memo: "Categórica → barras."
+      },
+      {
+        q: "Para una variable cuantitativa continua agrupada en intervalos, el gráfico más adecuado es:",
+        options: [
+          "histograma.",
+          "gráfico de sectores.",
+          "pictograma.",
+          "barras separadas."
+        ],
+        answer: "histograma.",
+        explain: "El histograma expresa continuidad usando barras contiguas.",
+        memo: "Continua → histograma."
+      },
+      {
+        q: "El gráfico de sectores es más apropiado cuando:",
+        options: [
+          "hay pocas categorías y se quieren mostrar proporciones del total.",
+          "se analizan dos variables continuas.",
+          "se muestran frecuencias acumuladas.",
+          "la variable es siempre temporal."
+        ],
+        answer: "hay pocas categorías y se quieren mostrar proporciones del total.",
+        explain: "El circular funciona mejor con pocas categorías y porcentajes que suman 100 %.",
+        memo: "Sectores = pocas categorías + proporciones."
+      },
+      {
+        q: "En un pictograma correctamente construido, la comparación debe hacerse con base en:",
+        options: [
+          "el área del dibujo.",
+          "solo la altura del dibujo.",
+          "solo el color del dibujo.",
+          "la fuente tipográfica."
+        ],
+        answer: "el área del dibujo.",
+        explain: "La magnitud debe representarse proporcionalmente mediante el área, no solo la altura.",
+        memo: "Pictograma = áreas."
+      },
+      {
+        q: "El polígono de frecuencias se obtiene generalmente al unir:",
+        options: [
+          "los puntos medios de las barras del histograma.",
+          "las esquinas del gráfico circular.",
+          "las frecuencias absolutas y relativas en una sola tabla.",
+          "los valores perdidos."
+        ],
+        answer: "los puntos medios de las barras del histograma.",
+        explain: "Es una forma lineal de representar la distribución de frecuencias.",
+        memo: "Polígono = unir puntos medios."
+      },
+      {
+        q: "La nube de puntos sirve principalmente para:",
+        options: [
+          "explorar la relación entre dos variables continuas.",
+          "representar una sola variable nominal.",
+          "mostrar frecuencias acumuladas exclusivamente.",
+          "presentar porcentajes en círculo."
+        ],
+        answer: "explorar la relación entre dos variables continuas.",
+        explain: "Cada punto representa un par de valores de dos variables cuantitativas.",
+        memo: "Dispersión = relación entre dos numéricas."
+      },
+      {
+        q: "En una serie temporal, el tiempo suele colocarse en:",
+        options: [
+          "el eje horizontal.",
+          "el eje vertical.",
+          "la leyenda.",
+          "una nota al pie."
+        ],
+        answer: "el eje horizontal.",
+        explain: "Las series temporales muestran la evolución cronológica sobre el eje X.",
+        memo: "Tiempo va en X."
+      },
+      {
+        q: "Una ventaja de un buen gráfico frente a una tabla extensa es que:",
+        options: [
+          "facilita la asimilación visual de patrones.",
+          "elimina el sesgo automáticamente.",
+          "sustituye cualquier análisis posterior.",
+          "convierte variables continuas en nominales."
+        ],
+        answer: "facilita la asimilación visual de patrones.",
+        explain: "Los gráficos ayudan a detectar tendencias, diferencias y distribuciones rápidamente.",
+        memo: "Buen gráfico = patrones visibles rápido."
+      },
+      {
+        q: "En tablas de frecuencias, los valores perdidos son importantes porque:",
+        options: [
+          "pueden requerir distinguir porcentajes válidos de porcentajes totales.",
+          "deben ignorarse siempre.",
+          "solo aparecen en experimentos.",
+          "impiden el uso de porcentajes."
+        ],
+        answer: "pueden requerir distinguir porcentajes válidos de porcentajes totales.",
+        explain: "Cuando hay missing, puede mostrarse una columna de válidos que excluya los no aplicables o perdidos.",
+        memo: "Missing → revisar porcentajes válidos."
+      },
+      {
+        q: "En Big Data, uno de los retos es que:",
+        options: [
+          "hay demasiada información para analizarla con métodos no adaptados.",
+          "siempre faltan datos.",
+          "los gráficos dejan de tener sentido.",
+          "la estadística ya no sirve."
+        ],
+        answer: "hay demasiada información para analizarla con métodos no adaptados.",
+        explain: "El volumen obliga a buscar eficiencia computacional y nuevos métodos.",
+        memo: "Big Data = exceso y complejidad."
+      },
+      {
+        q: "Respecto a los outliers en Big Data, una postura prudente es:",
+        options: [
+          "no eliminarlos automáticamente sin evaluar su significado.",
+          "borrarlos siempre.",
+          "duplicarlos para equilibrar la muestra.",
+          "convertirlos en valores perdidos sin revisar."
+        ],
+        answer: "no eliminarlos automáticamente sin evaluar su significado.",
+        explain: "En entornos masivos, los outliers pueden representar segmentos o fenómenos relevantes.",
+        memo: "Outlier no siempre = basura."
+      },
+      {
+        q: "La complejidad de los datos en Big Data suele deberse a:",
+        options: [
+          "su heterogeneidad y dificultad de interpretación.",
+          "que siempre están en papel.",
+          "que nunca provienen de internet.",
+          "que no pueden transformarse."
+        ],
+        answer: "su heterogeneidad y dificultad de interpretación.",
+        explain: "Los datos masivos suelen provenir de múltiples fuentes y formatos, lo que exige transformación y limpieza.",
+        memo: "Big Data = muchos datos + datos complejos."
+      },
+      {
+        q: "Una necesidad clave para analizar Big Data es disponer de:",
+        options: [
+          "infraestructuras potentes de cómputo.",
+          "solamente papel y lápiz.",
+          "menos datos.",
+          "muestras siempre pequeñas."
+        ],
+        answer: "infraestructuras potentes de cómputo.",
+        explain: "Clústeres y nube facilitan análisis eficientes en grandes volúmenes de información.",
+        memo: "Big Data necesita músculo computacional."
+      },
+      {
+        q: "La paralelización de métodos es valiosa porque:",
+        options: [
+          "permite que varios procesadores trabajen al mismo tiempo.",
+          "convierte datos cualitativos en cuantitativos.",
+          "elimina el sesgo muestral.",
+          "reemplaza la programación."
+        ],
+        answer: "permite que varios procesadores trabajen al mismo tiempo.",
+        explain: "La computación paralela acelera el análisis en entornos grandes.",
+        memo: "Paralelizar = dividir trabajo."
+      },
+      {
+        q: "Las políticas de privacidad en Big Data importan porque:",
+        options: [
+          "muchos datos no están libremente disponibles y requieren autorización.",
+          "los datos públicos no existen.",
+          "todo dato puede comprarse sin restricción.",
+          "impiden cualquier análisis estadístico."
+        ],
+        answer: "muchos datos no están libremente disponibles y requieren autorización.",
+        explain: "La huella digital suele ser privada o controlada por empresas y plataformas.",
+        memo: "Mucho dato existe, pero no todo es accesible."
+      },
+      {
+        q: "La estadística computacional puede verse como:",
+        options: [
+          "un puente entre matemáticas, estadística e informática.",
+          "una disciplina sin relación con el Big Data.",
+          "solo un curso de Excel.",
+          "una técnica exclusiva de laboratorio."
+        ],
+        answer: "un puente entre matemáticas, estadística e informática.",
+        explain: "Integra fundamentos clásicos con implementación computacional para resolver problemas complejos.",
+        memo: "Estadística computacional = puente."
+      },
+      {
+        q: "Según el enfoque del curso, R se presenta principalmente como:",
+        options: [
+          "software estadístico útil para programación y análisis.",
+          "una red social.",
+          "un gestor de bases de datos relacional.",
+          "un lenguaje exclusivo para gráficos 3D."
+        ],
+        answer: "software estadístico útil para programación y análisis.",
+        explain: "R se usa para implementar algoritmos estadísticos y trabajar con datos.",
+        memo: "R = análisis + programación estadística."
+      },
+      {
+        q: "Un objetivo de la estadística computacional es:",
+        options: [
+          "formular problemas estadísticos como algoritmos computacionales.",
+          "evitar totalmente la programación.",
+          "trabajar solo con teoría sin datos.",
+          "reducir cualquier estudio a porcentajes simples."
+        ],
+        answer: "formular problemas estadísticos como algoritmos computacionales.",
+        explain: "La idea es traducir el problema a una solución implementable por computadora.",
+        memo: "Problema estadístico → algoritmo."
+      },
+      {
+        q: "La reutilización de código en programación estadística es útil porque:",
+        options: [
+          "permite adaptar soluciones sencillas a problemas más complejos.",
+          "impide cometer errores lógicos.",
+          "elimina la necesidad de entender el problema.",
+          "vuelve innecesario validar resultados."
+        ],
+        answer: "permite adaptar soluciones sencillas a problemas más complejos.",
+        explain: "Las plantillas y ejemplos reutilizables agilizan el desarrollo y ayudan a escalar soluciones.",
+        memo: "Buen código se reutiliza y adapta."
+      },
+      {
+        q: "En el contexto del curso, la estadística computacional busca especialmente ayudar a entender:",
+        options: [
+          "sistemas complejos y entornos Big Data.",
+          "únicamente muestras pequeñas manuales.",
+          "solo encuestas de papel.",
+          "solamente cálculos sin contexto."
+        ],
+        answer: "sistemas complejos y entornos Big Data.",
+        explain: "Su motivación central es abordar problemas de gran volumen y complejidad.",
+        memo: "Computacional = útil ante complejidad."
+      }
+    ];
 
-    function renderQuiz() {
-      quiz.innerHTML = '';
-      questions.forEach((item, idx) => {
-        const section = document.createElement('section');
-        section.className = 'card question';
+    function cloneQuestion(q, suffix) {
+      return {
+        id: suffix,
+        q: q.q,
+        options: [...q.options],
+        answer: q.answer,
+        explain: q.explain,
+        memo: q.memo
+      };
+    }
 
-        const title = document.createElement('h3');
-        title.textContent = item.q;
-        section.appendChild(title);
+    function buildQuestionBank() {
+      const bank = [];
+      let id = 1;
+      for (let round = 0; round < 5; round++) {
+        for (const item of topic1Base) {
+          const q = cloneQuestion(item, id++);
+          q.q = `[Bloque ${round + 1}] ` + q.q;
+          bank.push(q);
+        }
+        for (const item of topic2Base) {
+          const q = cloneQuestion(item, id++);
+          q.q = `[Bloque ${round + 1}] ` + q.q;
+          bank.push(q);
+        }
+      }
+      return bank.slice(0, 200);
+    }
 
-        const options = document.createElement('div');
-        options.className = 'options';
+    const masterBank = buildQuestionBank();
 
-        item.options.forEach((opt, optIndex) => {
-          const label = document.createElement('label');
-          label.className = 'option';
-          label.innerHTML = `<input type="radio" name="q${idx}" value="${optIndex}"> ${String.fromCharCode(65 + optIndex)}. ${opt}`;
-          options.appendChild(label);
+    function shuffle(array) {
+      const arr = [...array];
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    function normalizeQuestion(q) {
+      const shuffledOptions = shuffle(q.options);
+      return {
+        q: q.q,
+        options: shuffledOptions,
+        correct: shuffledOptions.indexOf(q.answer),
+        explain: q.explain,
+        memo: q.memo
+      };
+    }
+
+    function getRandomExam() {
+      return shuffle(masterBank).slice(0, QUESTION_COUNT).map(normalizeQuestion);
+    }
+
+    let questions = getRandomExam();
+    let current = 0;
+    let score = 0;
+    let selected = null;
+    let answered = false;
+    let summary = [];
+
+    const startBtn = document.getElementById('startBtn');
+    const newExamBtn = document.getElementById('newExamBtn');
+    const quizWrap = document.getElementById('quizWrap');
+    const resultsBox = document.getElementById('resultsBox');
+    const counter = document.getElementById('counter');
+    const scoreNow = document.getElementById('scoreNow');
+    const progressBar = document.getElementById('progressBar');
+    const questionText = document.getElementById('questionText');
+    const optionsBox = document.getElementById('optionsBox');
+    const feedbackBox = document.getElementById('feedbackBox');
+    const checkBtn = document.getElementById('checkBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const restartBtn = document.getElementById('restartBtn');
+    const retryBtn = document.getElementById('retryBtn');
+    const finalScore = document.getElementById('finalScore');
+    const finalMsg = document.getElementById('finalMsg');
+    const summaryList = document.getElementById('summaryList');
+    const bankSize = document.getElementById('bankSize');
+
+    bankSize.textContent = masterBank.length;
+
+    function prepareNewExam() {
+      questions = getRandomExam();
+      current = 0;
+      score = 0;
+      selected = null;
+      answered = false;
+      summary = [];
+    }
+
+    function startQuiz() {
+      prepareNewExam();
+      quizWrap.style.display = 'block';
+      resultsBox.style.display = 'none';
+      renderQuestion();
+    }
+
+    function renderQuestion() {
+      const q = questions[current];
+      counter.textContent = `Pregunta ${current + 1} de ${questions.length}`;
+      scoreNow.textContent = score;
+      progressBar.style.width = `${(current / questions.length) * 100}%`;
+      questionText.textContent = q.q;
+      optionsBox.innerHTML = '';
+      feedbackBox.style.display = 'none';
+      feedbackBox.innerHTML = '';
+      selected = null;
+      answered = false;
+      nextBtn.disabled = true;
+
+      q.options.forEach((opt, index) => {
+        const btn = document.createElement('button');
+        btn.className = 'option';
+        btn.innerHTML = `<strong>${String.fromCharCode(65 + index)}.</strong> ${opt}`;
+        btn.addEventListener('click', () => {
+          if (answered) return;
+          selected = index;
+          document.querySelectorAll('.option').forEach(el => el.classList.remove('selected'));
+          btn.classList.add('selected');
         });
-
-        const feedback = document.createElement('div');
-        feedback.className = 'feedback';
-        feedback.id = `feedback-${idx}`;
-
-        section.appendChild(options);
-        section.appendChild(feedback);
-        quiz.appendChild(section);
+        optionsBox.appendChild(btn);
       });
     }
 
-    function gradeQuiz() {
-      let score = 0;
-
-      questions.forEach((item, idx) => {
-        const selected = document.querySelector(`input[name="q${idx}"]:checked`);
-        const feedback = document.getElementById(`feedback-${idx}`);
-
-        if (!selected) {
-          feedback.style.display = 'block';
-          feedback.className = 'feedback incorrect';
-          feedback.innerHTML = `<strong>Sin responder.</strong> Correcta: ${String.fromCharCode(65 + item.correct)}. ${item.options[item.correct]}<br><strong>Memoria rápida:</strong> ${item.explanation}`;
-          return;
-        }
-
-        const value = Number(selected.value);
-        const isCorrect = value === item.correct;
-
-        if (isCorrect) {
-          score++;
-          feedback.style.display = 'block';
-          feedback.className = 'feedback correct';
-          feedback.innerHTML = `<strong>Correcta.</strong> ${item.explanation}`;
-        } else {
-          feedback.style.display = 'block';
-          feedback.className = 'feedback incorrect';
-          feedback.innerHTML = `<strong>Incorrecta.</strong> Correcta: ${String.fromCharCode(65 + item.correct)}. ${item.options[item.correct]}<br><strong>Memoria rápida:</strong> ${item.explanation}`;
-        }
+    function checkAnswer() {
+      if (selected === null || answered) return;
+      answered = true;
+      const q = questions[current];
+      const optionEls = document.querySelectorAll('.option');
+      optionEls.forEach((el, idx) => {
+        if (idx === q.correct) el.classList.add('correct');
+        if (idx === selected && idx !== q.correct) el.classList.add('incorrect');
       });
 
-      const resultBox = document.getElementById('resultBox');
-      const scoreText = document.getElementById('scoreText');
-      const scoreAdvice = document.getElementById('scoreAdvice');
-      resultBox.style.display = 'block';
-      scoreText.textContent = `Resultado: ${score} / ${questions.length}`;
+      const isCorrect = selected === q.correct;
+      if (isCorrect) score++;
+      scoreNow.textContent = score;
+      feedbackBox.style.display = 'block';
+      feedbackBox.innerHTML = `
+        <strong>${isCorrect ? '✅ Correcta' : '❌ Incorrecta'}</strong><br>
+        <div><strong>Respuesta correcta:</strong> ${String.fromCharCode(65 + q.correct)}. ${q.options[q.correct]}</div>
+        <div style="margin-top:8px;"><strong>Explicación breve:</strong> ${q.explain}</div>
+        <div class="memoriza"><strong>Para memorizar rápido:</strong> ${q.memo}</div>
+      `;
 
-      let advice = 'Repasa de nuevo conceptos clave.';
-      if (score >= 18) advice = 'Muy buen nivel. Ya estás cerca de un desempeño fuerte en un examen tipo final.';
-      else if (score >= 14) advice = 'Buen nivel. Conviene reforzar inferencia, gráficos y sesgo para asegurar.';
-      else if (score >= 10) advice = 'Nivel medio. Repite el simulador y memoriza definiciones clave y diferencias entre conceptos.';
-
-      scoreAdvice.textContent = advice;
-      resultBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    }
-
-    function resetQuiz() {
-      document.querySelectorAll('input[type="radio"]').forEach(input => input.checked = false);
-      document.querySelectorAll('.feedback').forEach(box => {
-        box.style.display = 'none';
-        box.textContent = '';
+      summary.push({
+        q: q.q,
+        correct: q.options[q.correct],
+        ok: isCorrect,
+        memo: q.memo
       });
-      document.getElementById('resultBox').style.display = 'none';
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      nextBtn.disabled = false;
+      progressBar.style.width = `${((current + 1) / questions.length) * 100}%`;
     }
 
-    document.getElementById('gradeBtn').addEventListener('click', gradeQuiz);
-    document.getElementById('resetBtn').addEventListener('click', resetQuiz);
+    function nextQuestion() {
+      if (!answered) return;
+      current++;
+      if (current >= questions.length) showResults();
+      else renderQuestion();
+    }
 
-    renderQuiz();
+    function showResults() {
+      quizWrap.style.display = 'none';
+      resultsBox.style.display = 'block';
+      finalScore.textContent = `${score} / ${questions.length}`;
+      let msg = 'Buen trabajo.';
+      if (score >= 18) msg = 'Excelente nivel. Vas muy sólido para el examen.';
+      else if (score >= 15) msg = 'Buen nivel. Repasa definiciones, gráficos y Big Data.';
+      else if (score >= 12) msg = 'Nivel aceptable, pero conviene repasar sesgo, frecuencias y tipos de variables.';
+      else msg = 'Necesitas reforzar conceptos base antes del examen.';
+      finalMsg.textContent = msg;
+      summaryList.innerHTML = '';
+      summary.forEach((item, i) => {
+        const div = document.createElement('div');
+        div.className = 'summary-item';
+        div.innerHTML = `
+          <div><strong>${i + 1}. ${item.q}</strong>
+            <span class="tag ${item.ok ? 'ok' : 'bad'}">${item.ok ? 'Bien' : 'Repasar'}</span>
+          </div>
+          <div style="margin-top:8px;"><strong>Correcta:</strong> ${item.correct}</div>
+          <div style="margin-top:6px; color:#fde68a;"><strong>Memoria rápida:</strong> ${item.memo}</div>
+        `;
+        summaryList.appendChild(div);
+      });
+    }
+
+    startBtn.addEventListener('click', startQuiz);
+    newExamBtn.addEventListener('click', startQuiz);
+    checkBtn.addEventListener('click', checkAnswer);
+    nextBtn.addEventListener('click', nextQuestion);
+    restartBtn.addEventListener('click', startQuiz);
+    retryBtn.addEventListener('click', startQuiz);
   </script>
 </body>
 </html>
